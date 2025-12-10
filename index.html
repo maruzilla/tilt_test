@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>傾きで図形を動かす</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+
+    // 四角形のサイズ
+    const size = 50;
+
+    // 傾きイベント
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener("deviceorientation", function(event) {
+        // gamma: 左右の傾き (-90〜90)
+        // beta: 前後の傾き (-180〜180)
+        x += event.gamma / 5;  // 左右移動
+        y += event.beta / 5;   // 上下移動
+
+        // 画面外に出ないよう制限
+        x = Math.max(size/2, Math.min(canvas.width - size/2, x));
+        y = Math.max(size/2, Math.min(canvas.height - size/2, y));
+      });
+    }
+
+    // 描画ループ
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "tomato";
+      ctx.fillRect(x - size/2, y - size/2, size, size);
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+</body>
+</html>
