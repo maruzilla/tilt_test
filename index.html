@@ -6,9 +6,11 @@
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; background: #f0f0f0; }
+    #btn { position: absolute; top: 10px; left: 10px; padding: 10px; }
   </style>
 </head>
 <body>
+  <button id="btn">センサーを有効化</button>
   <canvas id="canvas"></canvas>
 
   <script>
@@ -19,23 +21,7 @@
 
     let x = canvas.width / 2;
     let y = canvas.height / 2;
-
-    // 四角形のサイズ
     const size = 50;
-
-    // 傾きイベント
-    if (window.DeviceOrientationEvent) {
-      window.addEventListener("deviceorientation", function(event) {
-        // gamma: 左右の傾き (-90〜90)
-        // beta: 前後の傾き (-180〜180)
-        x += event.gamma / 5;  // 左右移動
-        y += event.beta / 5;   // 上下移動
-
-        // 画面外に出ないよう制限
-        x = Math.max(size/2, Math.min(canvas.width - size/2, x));
-        y = Math.max(size/2, Math.min(canvas.height - size/2, y));
-      });
-    }
 
     // 描画ループ
     function draw() {
@@ -45,6 +31,38 @@
       requestAnimationFrame(draw);
     }
     draw();
+
+    // センサー有効化ボタン
+    document.getElementById("btn").addEventListener("click", async () => {
+      if (typeof DeviceOrientationEvent !== "undefined" &&
+          typeof DeviceOrientationEvent.requestPermission === "function") {
+        // iOS Safari用
+        const response = await DeviceOrientationEvent.requestPermission();
+        if (response === "granted") {
+          startOrientation();
+        } else {
+          alert("センサーアクセスが拒否されました");
+        }
+      } else {
+        // Androidなど
+        startOrientation();
+      }
+    });
+
+    function startOrientation() {
+      window.addEventListener("deviceorientation", function(event) {
+        if (event.gamma !== null) {
+          x += event.gamma / 5;
+        }
+        if (event.beta !== null) {
+          y += event.beta / 5;
+        }
+
+        // 画面外に出ないよう制限
+        x = Math.max(size/2, Math.min(canvas.width - size/2, x));
+        y = Math.max(size/2, Math.min(canvas.height - size/2, y));
+      });
+    }
   </script>
 </body>
 </html>
